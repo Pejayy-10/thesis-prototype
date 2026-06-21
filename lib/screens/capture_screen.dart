@@ -58,7 +58,7 @@ class _CaptureScreenState extends State<CaptureScreen> {
                         ),
                       )
                     : ClipRRect(
-                        borderRadius: BorderRadius.circular(6.0),
+                        borderRadius: BorderRadius.circular(8.0),
                         child: Image.file(_image!, fit: BoxFit.cover),
                       ),
               ),

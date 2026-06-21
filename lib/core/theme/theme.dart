@@ -28,19 +28,12 @@ class AppTheme {
         primary: AppColors.primary,
         surface: AppColors.surface,
         error: AppColors.signalCritical,
-        background: AppColors.background,
       ),
       textTheme: GoogleFonts.interTextTheme(),
       appBarTheme: const AppBarTheme(
         backgroundColor: AppColors.primary,
         foregroundColor: AppColors.surface,
         elevation: 0,
-      ),
-      cardTheme: CardTheme(
-        color: AppColors.surface,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8.0),
-        ),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(

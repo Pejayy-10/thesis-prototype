@@ -23,7 +23,7 @@ class StatusCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.s16),
       decoration: BoxDecoration(
-        color: backgroundColor.withOpacity(0.1),
+        color: backgroundColor.withAlpha(25),
         border: Border.all(color: backgroundColor, width: 2),
         borderRadius: BorderRadius.circular(8.0),
       ),

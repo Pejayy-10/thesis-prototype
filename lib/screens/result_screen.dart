@@ -64,7 +64,7 @@ class ResultScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildClassificationCard(classification) {
+  Widget _buildClassificationCard(Classification classification) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(AppSpacing.s16),
@@ -73,7 +73,7 @@ class ResultScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(8.0),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withAlpha(13),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -86,7 +86,7 @@ class ResultScreen extends StatelessWidget {
             classification.commonName,
             style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.primary),
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: AppSpacing.s8),
           Text(
             classification.scientificName,
             style: const TextStyle(fontSize: 16, fontStyle: FontStyle.italic, color: Colors.grey),
