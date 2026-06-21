@@ -1,48 +1,110 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../core/theme/theme.dart';
 import '../providers/scan_provider.dart';
+import '../widgets/primary_button.dart';
 import '../data/models/scan_result.dart';
 
-class AnalysisScreen extends StatelessWidget {
+class AnalysisScreen extends StatefulWidget {
   const AnalysisScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final provider = context.watch<ScanProvider>();
+  State<AnalysisScreen> createState() => _AnalysisScreenState();
+}
 
-    return Scaffold(
-      appBar: AppBar(title: const Text('Analyzing...')),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text('Current State: ${provider.state.name}'),
-            const SizedBox(height: 16),
-            if (provider.state == ScanState.loading)
-              const CircularProgressIndicator(),
-            if (provider.state == ScanState.success)
-              Text('Result: ${provider.currentResult?.classification.commonName}'),
-            if (provider.state == ScanState.error)
-              Text('Error: ${provider.errorMessage}', style: const TextStyle(color: Colors.red)),
-            
-            const SizedBox(height: 32),
-            ElevatedButton(
-              onPressed: () {
-                // Simulate analysis
-                context.read<ScanProvider>().analyzeImage('mock/path.jpg', InputModality.woodGrain);
-              },
-              child: const Text('Trigger Mock Analysis'),
+class _AnalysisScreenState extends State<AnalysisScreen> {
+  ScanProvider? _provider;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_provider == null) {
+      _provider = context.read<ScanProvider>();
+      _provider!.addListener(_onStateChange);
+    }
+  }
+
+  @override
+  void dispose() {
+    _provider?.removeListener(_onStateChange);
+    super.dispose();
+  }
+
+  void _onStateChange() {
+    if (!mounted) return;
+    if (_provider?.state == ScanState.success) {
+      Navigator.pushReplacementNamed(context, '/result');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<ScanProvider>(
+      builder: (context, provider, child) {
+        return Scaffold(
+          appBar: AppBar(
+            title: const Text('Analyzing...'),
+            automaticallyImplyLeading: false,
+          ),
+          body: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(AppSpacing.s24),
+              child: _buildContent(provider),
             ),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: provider.state == ScanState.success || provider.state == ScanState.error
-                  ? () => Navigator.pushNamed(context, '/result')
-                  : null,
-              child: const Text('View Result'),
-            ),
-          ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildContent(ScanProvider provider) {
+    if (provider.state == ScanState.error) {
+      return Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(Icons.error_outline, size: 64, color: AppColors.signalCritical),
+          const SizedBox(height: AppSpacing.s16),
+          const Text(
+            'Analysis Failed',
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.signalCritical),
+          ),
+          const SizedBox(height: AppSpacing.s8),
+          Text(
+            provider.errorMessage ?? 'An unknown error occurred.',
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: AppSpacing.s32),
+          PrimaryButton(
+            label: 'Retry',
+            icon: Icons.refresh,
+            onPressed: () {
+              provider.analyzeImage('mock/path.jpg', InputModality.woodGrain);
+            },
+          ),
+          const SizedBox(height: AppSpacing.s16),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+        ],
+      );
+    }
+
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        const CircularProgressIndicator(strokeWidth: 4),
+        const SizedBox(height: AppSpacing.s24),
+        const Text(
+          'Extracting Features...',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
         ),
-      ),
+        const SizedBox(height: AppSpacing.s8),
+        Text(
+          'Simulating ResNet-50 + EfficientNet-B4',
+          style: TextStyle(color: Colors.grey.shade600),
+        ),
+      ],
     );
   }
 }
