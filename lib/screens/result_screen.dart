@@ -4,6 +4,7 @@ import '../core/theme/theme.dart';
 import '../providers/scan_provider.dart';
 import '../widgets/primary_button.dart';
 import '../widgets/status_card.dart';
+import '../data/models/scan_result.dart';
 
 class ResultScreen extends StatelessWidget {
   const ResultScreen({super.key});
