@@ -9,6 +9,10 @@ android {
     namespace = "com.example.woodconnet"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
+    
+    defaultConfig {
+        minSdkVersion 21   // camera package requires at least 21
+    }
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
