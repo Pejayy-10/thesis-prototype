@@ -3,6 +3,9 @@ import '../core/theme.dart';
 import '../models/classification_result.dart';
 import '../widgets/bottom_nav.dart';
 import 'protection_screen.dart';
+import 'history_screen.dart';
+import 'guide_screen.dart';
+import 'settings_screen.dart';
 
 class MaturityScreen extends StatefulWidget {
   final ClassificationResult result;
@@ -286,8 +289,20 @@ class _MaturityScreenState extends State<MaturityScreen> {
           return WoodConNetBottomNav(
             currentIndex: navIndex,
             onTap: (i) {
-              globalNavIndex.value = i;
-              Navigator.popUntil(context, (route) => route.isFirst);
+              if (i == navIndex) return;
+              switch (i) {
+                case 1:
+                  Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (_) => const HistoryScreen()), (route) => false);
+                  break;
+                case 2:
+                  Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (_) => const GuideScreen()), (route) => false);
+                  break;
+                case 3:
+                  Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (_) => const SettingsScreen()), (route) => false);
+                  break;
+                default:
+                  break;
+              }
             },
           );
         },

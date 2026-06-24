@@ -5,6 +5,9 @@ import '../core/theme.dart';
 import '../models/classification_result.dart';
 import '../widgets/bottom_nav.dart';
 import 'classification_screen.dart';
+import 'history_screen.dart';
+import 'guide_screen.dart';
+import 'settings_screen.dart';
 
 class CaptureScreen extends StatefulWidget {
   final List<CameraDescription> cameras;
@@ -115,7 +118,6 @@ class _CaptureScreenState extends State<CaptureScreen>
           ),
         ),
         centerTitle: true,
-        leading: const BackButton(color: AppColors.primary),
       ),
       body: IndexedStack(
         index: globalNavIndex.value,
@@ -358,33 +360,26 @@ class _CaptureScreenState extends State<CaptureScreen>
               const SizedBox(height: 12),
             ],
           ),
-
-          // Tab 1: History Placeholder
-          const Center(
-            child: Text(
-              'History Page',
-              style: TextStyle(fontSize: 18, color: AppColors.textDark),
-            ),
-          ),
-          // Tab 2: Guide Placeholder
-          const Center(
-            child: Text(
-              'Guide Page',
-              style: TextStyle(fontSize: 18, color: AppColors.textDark),
-            ),
-          ),
-          // Tab 3: Settings Placeholder
-          const Center(
-            child: Text(
-              'Settings Page',
-              style: TextStyle(fontSize: 18, color: AppColors.textDark),
-            ),
-          ),
         ],
       ),
       bottomNavigationBar: WoodConNetBottomNav(
         currentIndex: globalNavIndex.value,
-        onTap: (i) => globalNavIndex.value = i,
+        onTap: (i) {
+          if (i == globalNavIndex.value) return;
+          switch (i) {
+            case 1:
+              Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (_) => const HistoryScreen()), (route) => false);
+              break;
+            case 2:
+              Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (_) => const GuideScreen()), (route) => false);
+              break;
+            case 3:
+              Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (_) => const SettingsScreen()), (route) => false);
+              break;
+            default:
+              break;
+          }
+        },
       ),
     );
   }
