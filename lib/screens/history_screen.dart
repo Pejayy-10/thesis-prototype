@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import '../core/theme.dart';
 import '../widgets/bottom_nav.dart';
+import '../models/classification_result.dart';
 import 'guide_screen.dart';
 import 'settings_screen.dart';
 import 'capture_screen.dart';
+import 'classification_screen.dart';
 
 class HistoryScreen extends StatefulWidget {
   const HistoryScreen({super.key});
@@ -30,6 +32,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
       'date': 'Jun 23, 2026',
       'time': '05:41 PM',
       'icon': Icons.eco_rounded,
+      'result': MockResults.narra,
     },
     {
       'species': 'Molave',
@@ -41,6 +44,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
       'date': 'Jun 23, 2026',
       'time': '03:12 PM',
       'icon': Icons.park_rounded,
+      'result': MockResults.molave,
     },
     {
       'species': 'Ipil',
@@ -52,6 +56,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
       'date': 'Jun 22, 2026',
       'time': '10:05 AM',
       'icon': Icons.nature_rounded,
+      'result': MockResults.narra,
     },
     {
       'species': 'Apitong',
@@ -63,6 +68,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
       'date': 'Jun 21, 2026',
       'time': '02:30 PM',
       'icon': Icons.forest_rounded,
+      'result': MockResults.molave,
     },
     {
       'species': 'White Lauan',
@@ -74,6 +80,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
       'date': 'Jun 20, 2026',
       'time': '09:18 AM',
       'icon': Icons.eco_rounded,
+      'result': MockResults.narra,
     },
   ];
 
@@ -266,103 +273,115 @@ class _HistoryCard extends StatelessWidget {
       badgeIcon = Icons.schedule_rounded;
     }
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.cardBg,
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: AppTheme.premiumShadow,
-      ),
-      child: Row(
-        children: [
-          // Icon
-          Container(
-            width: 50,
-            height: 50,
-            decoration: BoxDecoration(
-              color: AppColors.primaryLight.withValues(alpha: 0.5),
-              borderRadius: BorderRadius.circular(14),
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => ClassificationScreen(
+              result: item['result'] as ClassificationResult,
             ),
-            child: Icon(item['icon'] as IconData,
-                color: AppColors.primary, size: 24),
           ),
-          const SizedBox(width: 14),
+        );
+      },
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 16),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: AppColors.cardBg,
+          borderRadius: BorderRadius.circular(24),
+          boxShadow: AppTheme.premiumShadow,
+        ),
+        child: Row(
+          children: [
+            // Icon
+            Container(
+              width: 50,
+              height: 50,
+              decoration: BoxDecoration(
+                color: AppColors.primaryLight.withValues(alpha: 0.5),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: Icon(item['icon'] as IconData,
+                  color: AppColors.primary, size: 24),
+            ),
+            const SizedBox(width: 14),
 
-          // Info
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      item['species'] as String,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w900,
-                        fontFamily: 'Georgia',
-                        color: AppColors.textDark,
-                        letterSpacing: 0.2,
+            // Info
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        item['species'] as String,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w900,
+                          fontFamily: 'Georgia',
+                          color: AppColors.textDark,
+                          letterSpacing: 0.2,
+                        ),
                       ),
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: badgeColor.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: badgeColor.withValues(alpha: 0.2)),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(badgeIcon, size: 12, color: badgeColor),
-                          const SizedBox(width: 4),
-                          Text(
-                            status,
-                            style: TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w800,
-                              color: badgeColor,
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: badgeColor.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: badgeColor.withValues(alpha: 0.2)),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(badgeIcon, size: 12, color: badgeColor),
+                            const SizedBox(width: 4),
+                            Text(
+                              status,
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w800,
+                                color: badgeColor,
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  item['scientific'] as String,
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontStyle: FontStyle.italic,
-                    color: AppColors.textMuted.withValues(alpha: 0.8),
+                    ],
                   ),
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    _Tag(label: item['sampleType'] as String),
-                    const SizedBox(width: 6),
-                    _Tag(label: '${item['confidence']}% match'),
-                    const Spacer(),
-                    Text(
-                      '${item['date']}',
-                      style: const TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w500,
-                        color: AppColors.textLight,
-                      ),
+                  const SizedBox(height: 2),
+                  Text(
+                    item['scientific'] as String,
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontStyle: FontStyle.italic,
+                      color: AppColors.textMuted.withValues(alpha: 0.8),
                     ),
-                  ],
-                ),
-              ],
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      _Tag(label: item['sampleType'] as String),
+                      const SizedBox(width: 6),
+                      _Tag(label: '${item['confidence']}% match'),
+                      const Spacer(),
+                      Text(
+                        '${item['date']}',
+                        style: const TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w500,
+                          color: AppColors.textLight,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
