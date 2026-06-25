@@ -3,6 +3,7 @@ import '../core/theme.dart';
 import '../models/classification_result.dart';
 import '../widgets/bottom_nav.dart';
 import 'protection_screen.dart';
+import 'construction_recommendation_screen.dart';
 import 'history_screen.dart';
 import 'guide_screen.dart';
 import 'settings_screen.dart';
@@ -311,6 +312,36 @@ class _MaturityScreenState extends State<MaturityScreen> {
                     Icon(Icons.arrow_forward_rounded, size: 18),
                   ],
                 ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            OutlinedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => ConstructionRecommendationScreen(result: widget.result),
+                  ),
+                );
+              },
+              style: OutlinedButton.styleFrom(
+                foregroundColor: AppColors.primary,
+                side: const BorderSide(color: AppColors.primary),
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30),
+                ),
+              ),
+              child: const Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.construction_rounded, size: 18),
+                  SizedBox(width: 8),
+                  Text(
+                    'View Construction Recommendation',
+                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+                  ),
+                ],
               ),
             ),
             const SizedBox(height: 20),
