@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class AppColors {
-  static const background = Color(0xFFF5F2ED);
+  static const background = Color(0xFFF7F9F8); // Cleaner off-white for iOS feel
   static const primary = Color(0xFF2D5A3D);
   static const primaryLight = Color(0xFFE8F0EB);
   static const accent = Color(0xFF4A7C59);
@@ -19,6 +19,13 @@ class AppColors {
 }
 
 class AppTheme {
+  static List<BoxShadow> get premiumShadow => [
+        BoxShadow(
+          color: Colors.black.withValues(alpha: 0.05),
+          blurRadius: 20,
+          offset: const Offset(0, 8),
+        ),
+      ];
   static ThemeData get theme => ThemeData(
         scaffoldBackgroundColor: AppColors.background,
         colorScheme: const ColorScheme.light(

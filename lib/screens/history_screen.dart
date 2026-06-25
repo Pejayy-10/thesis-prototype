@@ -85,20 +85,50 @@ class _HistoryScreenState extends State<HistoryScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBody: true,
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: const Text('History'),
-        automaticallyImplyLeading: false,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.search_rounded, color: AppColors.textDark),
-            onPressed: () {},
-          ),
-        ],
-      ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // ── Large Header ─────────────────────────────────
+          SafeArea(
+            bottom: false,
+            child: Padding(
+              padding: const EdgeInsets.only(top: 24, left: 24, right: 24, bottom: 12),
+              child: const Text(
+                'History',
+                style: TextStyle(
+                  fontFamily: 'Georgia',
+                  fontWeight: FontWeight.bold,
+                  fontSize: 32,
+                  color: AppColors.textDark,
+                ),
+              ),
+            ),
+          ),
+          
+          // ── Search Bar ───────────────────────────────────
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Container(
+              height: 52,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(30),
+                boxShadow: AppTheme.premiumShadow,
+              ),
+              child: const TextField(
+                decoration: InputDecoration(
+                  hintText: 'Search by species or date...',
+                  hintStyle: TextStyle(color: AppColors.textLight, fontSize: 14),
+                  prefixIcon: Icon(Icons.search_rounded, color: AppColors.textMuted),
+                  border: InputBorder.none,
+                  contentPadding: EdgeInsets.symmetric(vertical: 16),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
           // ── Filter Chips ─────────────────────────────────
           SizedBox(
             height: 44,
@@ -112,26 +142,29 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   onTap: () => setState(() => _filter = _filters[i]),
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 180),
-                    margin: const EdgeInsets.only(right: 8),
+                    margin: const EdgeInsets.only(right: 10),
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 8),
+                        horizontal: 18, vertical: 8),
                     decoration: BoxDecoration(
                       color:
                           active ? AppColors.primary : AppColors.cardBg,
-                      borderRadius: BorderRadius.circular(24),
+                      borderRadius: BorderRadius.circular(30),
+                      boxShadow: active ? [] : AppTheme.premiumShadow,
                       border: Border.all(
                         color: active
                             ? AppColors.primary
-                            : const Color(0xFFDDD9D3),
+                            : Colors.transparent,
                       ),
                     ),
-                    child: Text(
-                      _filters[i],
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w500,
-                        color:
-                            active ? Colors.white : AppColors.textDark,
+                    child: Center(
+                      child: Text(
+                        _filters[i],
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color:
+                              active ? Colors.white : AppColors.textMuted,
+                        ),
                       ),
                     ),
                   ),
@@ -145,12 +178,13 @@ class _HistoryScreenState extends State<HistoryScreen> {
           // ── Count label ──────────────────────────────────
           Padding(
             padding:
-                const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
+                const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
             child: Text(
               '${_filtered.length} scan${_filtered.length != 1 ? 's' : ''}',
               style: const TextStyle(
-                fontSize: 12,
-                color: AppColors.textMuted,
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+                color: AppColors.textLight,
               ),
             ),
           ),
@@ -163,12 +197,28 @@ class _HistoryScreenState extends State<HistoryScreen> {
                     message: 'No scans found',
                     sub: 'Your scan history will appear here.',
                   )
-                : ListView.builder(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    itemCount: _filtered.length,
-                    itemBuilder: (_, i) =>
-                        _HistoryCard(item: _filtered[i]),
-                  ),
+                  : ListView.builder(
+                      padding: const EdgeInsets.only(left: 16, right: 16, bottom: 120),
+                      itemCount: _filtered.length,
+                      itemBuilder: (_, i) {
+                        return TweenAnimationBuilder<double>(
+                          key: ValueKey('${_filtered[i]['species']}_$_filter'),
+                          tween: Tween(begin: 0.0, end: 1.0),
+                          duration: Duration(milliseconds: 400 + (i * 100)),
+                          curve: Curves.easeOutCubic,
+                          builder: (context, value, child) {
+                            return Transform.translate(
+                              offset: Offset(0, 30 * (1 - value)),
+                              child: Opacity(
+                                opacity: value,
+                                child: child,
+                              ),
+                            );
+                          },
+                          child: _HistoryCard(item: _filtered[i]),
+                        );
+                      },
+                    ),
           ),
         ],
       ),
@@ -201,27 +251,43 @@ class _HistoryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Determine vibrant colors and icons for status
+    Color badgeColor;
+    IconData badgeIcon;
+    final status = item['status'] as String;
+    if (status == 'Approved') {
+      badgeColor = const Color(0xFF2E7D32); // Vibrant Green
+      badgeIcon = Icons.check_circle_rounded;
+    } else if (status == 'Rejected') {
+      badgeColor = const Color(0xFFD32F2F); // Vibrant Red
+      badgeIcon = Icons.cancel_rounded;
+    } else {
+      badgeColor = const Color(0xFFF57F17); // Vibrant Orange/Yellow
+      badgeIcon = Icons.schedule_rounded;
+    }
+
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(14),
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppColors.cardBg,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: AppTheme.premiumShadow,
       ),
       child: Row(
         children: [
           // Icon
           Container(
-            width: 46,
-            height: 46,
+            width: 50,
+            height: 50,
             decoration: BoxDecoration(
-              color: AppColors.primaryLight,
-              borderRadius: BorderRadius.circular(12),
+              color: AppColors.primaryLight.withValues(alpha: 0.5),
+              borderRadius: BorderRadius.circular(14),
             ),
             child: Icon(item['icon'] as IconData,
-                color: AppColors.primary, size: 22),
+                color: AppColors.primary, size: 24),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 14),
 
           // Info
           Expanded(
@@ -234,27 +300,35 @@ class _HistoryCard extends StatelessWidget {
                     Text(
                       item['species'] as String,
                       style: const TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w900,
                         fontFamily: 'Georgia',
                         color: AppColors.textDark,
+                        letterSpacing: 0.2,
                       ),
                     ),
                     Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 3),
+                          horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
-                        color: Color(item['statusColor'] as int)
-                            .withValues(alpha: 0.12),
+                        color: badgeColor.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: badgeColor.withValues(alpha: 0.2)),
                       ),
-                      child: Text(
-                        item['status'] as String,
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w700,
-                          color: Color(item['statusColor'] as int),
-                        ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(badgeIcon, size: 12, color: badgeColor),
+                          const SizedBox(width: 4),
+                          Text(
+                            status,
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w800,
+                              color: badgeColor,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],
@@ -262,13 +336,13 @@ class _HistoryCard extends StatelessWidget {
                 const SizedBox(height: 2),
                 Text(
                   item['scientific'] as String,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 12,
                     fontStyle: FontStyle.italic,
-                    color: AppColors.textMuted,
+                    color: AppColors.textMuted.withValues(alpha: 0.8),
                   ),
                 ),
-                const SizedBox(height: 6),
+                const SizedBox(height: 8),
                 Row(
                   children: [
                     _Tag(label: item['sampleType'] as String),
@@ -276,9 +350,10 @@ class _HistoryCard extends StatelessWidget {
                     _Tag(label: '${item['confidence']}% match'),
                     const Spacer(),
                     Text(
-                      '${item['date']}  ${item['time']}',
+                      '${item['date']}',
                       style: const TextStyle(
-                        fontSize: 10,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w500,
                         color: AppColors.textLight,
                       ),
                     ),

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import '../core/theme.dart';
@@ -104,9 +105,11 @@ class _CaptureScreenState extends State<CaptureScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      extendBodyBehindAppBar: true,
+      extendBody: true,
+      backgroundColor: Colors.black,
       appBar: AppBar(
-        backgroundColor: AppColors.background,
+        backgroundColor: Colors.transparent,
         elevation: 0,
         title: const Text(
           'Capture',
@@ -114,7 +117,8 @@ class _CaptureScreenState extends State<CaptureScreen>
             fontFamily: 'Georgia',
             fontWeight: FontWeight.bold,
             fontSize: 20,
-            color: AppColors.textDark,
+            color: Colors.white,
+            shadows: [Shadow(color: Colors.black54, blurRadius: 10)],
           ),
         ),
         centerTitle: true,
@@ -123,241 +127,257 @@ class _CaptureScreenState extends State<CaptureScreen>
         index: globalNavIndex.value,
         children: [
           // Tab 0: Capture View
-          Column(
+          Stack(
+            fit: StackFit.expand,
             children: [
-              // ── Camera Viewfinder ──────────────────────────────
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(20),
-                    child: Stack(
-                      fit: StackFit.expand,
-                      children: [
-                        // Camera preview or dark fallback
-                        _buildCameraPreview(),
+              // ── 1. Full Screen Camera Viewfinder ────────────────
+              _buildCameraPreview(),
 
-                        // Corner scan brackets
-                        _buildScanCorners(),
+              // ── 2. Corner scan brackets ────────────────────────
+              SafeArea(
+                child: _buildScanCorners(),
+              ),
 
-                        // Scan mode label
-                        Positioned(
-                          top: 16,
-                          left: 0,
-                          right: 0,
-                          child: Center(
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 6,
-                              ),
-                              decoration: BoxDecoration(
-                                color: Colors.black.withValues(alpha: 0.5),
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: const Text(
-                                'SCAN MODE',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 12,
-                                  letterSpacing: 1.5,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
+              // ── 3. Scan mode label ─────────────────────────────
+              Positioned(
+                top: MediaQuery.of(context).padding.top + kToolbarHeight + 16,
+                left: 0,
+                right: 0,
+                child: Center(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.5),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: const Text(
+                      'SCAN MODE',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                        letterSpacing: 1.5,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+
+              // ── 4. Animated scan line when scanning ────────────
+              if (_isScanning)
+                Positioned.fill(
+                  child: AnimatedBuilder(
+                    animation: _scanLineAnim,
+                    builder: (_, _) => Transform.translate(
+                      offset: Offset(0, _scanLineAnim.value * MediaQuery.of(context).size.height),
+                      child: Align(
+                        alignment: Alignment.topCenter,
+                        child: Container(
+                          height: 2,
+                          width: double.infinity,
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                Colors.transparent,
+                                AppColors.accent.withValues(alpha: 0.8),
+                                Colors.transparent,
+                              ],
                             ),
                           ),
                         ),
+                      ),
+                    ),
+                  ),
+                ),
 
-                        // Animated scan line when scanning
-                        if (_isScanning)
-                          AnimatedBuilder(
-                            animation: _scanLineAnim,
-                            builder: (_, _) => Positioned(
-                              top:
-                                  _scanLineAnim.value *
-                                  (MediaQuery.of(context).size.height * 0.4),
-                              left: 0,
-                              right: 0,
-                              child: Container(
-                                height: 2,
-                                decoration: BoxDecoration(
-                                  gradient: LinearGradient(
-                                    colors: [
-                                      Colors.transparent,
-                                      AppColors.accent.withValues(alpha: 0.8),
-                                      Colors.transparent,
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-
-                        // Scanning overlay
-                        if (_isScanning)
-                          Container(
-                            color: Colors.black.withValues(alpha: 0.3),
-                            child: const Center(
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  CircularProgressIndicator(
-                                    color: Colors.white,
-                                    strokeWidth: 2,
-                                  ),
-                                  SizedBox(height: 12),
-                                  Text(
-                                    'Analyzing sample...',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 14,
-                                      letterSpacing: 0.5,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-
-                        // Bottom hint
-                        Positioned(
-                          bottom: 16,
-                          left: 16,
-                          right: 16,
-                          child: Text(
-                            'Align leaf, bark, trunk or wood grain',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              color: Colors.white.withValues(alpha: 0.85),
-                              fontSize: 13,
-                            ),
+              // ── 5. Scanning overlay (dim the screen) ───────────
+              if (_isScanning)
+                Container(
+                  color: Colors.black.withValues(alpha: 0.4),
+                  child: const Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2,
+                        ),
+                        SizedBox(height: 16),
+                        Text(
+                          'Analyzing sample...',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            letterSpacing: 0.5,
+                            fontWeight: FontWeight.w500,
                           ),
                         ),
                       ],
                     ),
                   ),
                 ),
-              ),
 
-              const SizedBox(height: 16),
-
-              // ── Sample Type Selector ───────────────────────────
-              SizedBox(
-                height: 44,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  itemCount: _sampleTypes.length,
-                  itemBuilder: (_, i) {
-                    final bool active = i == _selectedSample;
-                    return GestureDetector(
-                      onTap: () => setState(() => _selectedSample = i),
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 200),
-                        margin: const EdgeInsets.only(right: 10),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 8,
-                        ),
-                        decoration: BoxDecoration(
-                          color: active ? AppColors.primary : AppColors.cardBg,
-                          borderRadius: BorderRadius.circular(24),
-                          border: Border.all(
-                            color: active
-                                ? AppColors.primary
-                                : const Color(0xFFDDD9D3),
-                          ),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              _sampleTypes[i]['icon'] as IconData,
-                              size: 18,
-                              color: active ? Colors.white : AppColors.textDark,
-                            ),
-                            const SizedBox(width: 6),
-                            Text(
-                              _sampleTypes[i]['label'] as String,
-                              style: TextStyle(
-                                color: active
-                                    ? Colors.white
-                                    : AppColors.textDark,
-                                fontSize: 13,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
+              // ── 6. Bottom Glassmorphism Panel ──────────────────
+              Positioned(
+                bottom: 0,
+                left: 0,
+                right: 0,
+                child: ClipRRect(
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(40)),
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                    child: Container(
+                      padding: const EdgeInsets.only(top: 24, bottom: 100),
+                      decoration: BoxDecoration(
+                        borderRadius: const BorderRadius.vertical(top: Radius.circular(40)),
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            Colors.black.withValues(alpha: 0.0),
+                            Colors.black.withValues(alpha: 0.6),
+                            Colors.black.withValues(alpha: 0.8),
                           ],
                         ),
                       ),
-                    );
-                  },
-                ),
-              ),
-
-              const SizedBox(height: 20),
-
-              // ── Camera Controls ────────────────────────────────
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 40),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    // Gallery button
-                    _CircleButton(
-                      icon: Icons.photo_library_outlined,
-                      onTap: () {},
-                    ),
-
-                    // Shutter
-                    GestureDetector(
-                      onTap: _onCapture,
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 150),
-                        width: 70,
-                        height: 70,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: _isScanning
-                              ? AppColors.textLight
-                              : Colors.white,
-                          border: Border.all(
-                            color: const Color(0xFFCCCCCC),
-                            width: 2,
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.1),
-                              blurRadius: 8,
-                              offset: const Offset(0, 2),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          // Bottom hint
+                          Text(
+                            'Align leaf, bark, trunk or wood grain',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: Colors.white.withValues(alpha: 0.9),
+                              fontSize: 13,
+                              fontWeight: FontWeight.w500,
                             ),
-                          ],
-                        ),
-                        child: _isScanning
-                            ? const Padding(
-                                padding: EdgeInsets.all(20),
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: AppColors.primary,
+                          ),
+                          const SizedBox(height: 20),
+
+                          // Sample Type Selector
+                          SizedBox(
+                            height: 44,
+                            child: ListView.builder(
+                              scrollDirection: Axis.horizontal,
+                              padding: const EdgeInsets.symmetric(horizontal: 16),
+                              itemCount: _sampleTypes.length,
+                              itemBuilder: (_, i) {
+                                final bool active = i == _selectedSample;
+                                return GestureDetector(
+                                  onTap: () => setState(() => _selectedSample = i),
+                                  child: AnimatedContainer(
+                                    duration: const Duration(milliseconds: 200),
+                                    margin: const EdgeInsets.only(right: 10),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 16,
+                                      vertical: 8,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: active
+                                          ? AppColors.primary
+                                          : Colors.white.withValues(alpha: 0.15),
+                                      borderRadius: BorderRadius.circular(24),
+                                      border: Border.all(
+                                        color: active
+                                            ? AppColors.primary
+                                            : Colors.white.withValues(alpha: 0.3),
+                                      ),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(
+                                          _sampleTypes[i]['icon'] as IconData,
+                                          size: 18,
+                                          color: Colors.white,
+                                        ),
+                                        const SizedBox(width: 6),
+                                        Text(
+                                          _sampleTypes[i]['label'] as String,
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                          const SizedBox(height: 24),
+
+                          // Camera Controls
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 40),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                // Gallery button
+                                _CircleButton(
+                                  icon: Icons.photo_library_outlined,
+                                  onTap: () {},
                                 ),
-                              )
-                            : null,
+
+                                // Shutter
+                                GestureDetector(
+                                  onTap: _onCapture,
+                                  child: AnimatedContainer(
+                                    duration: const Duration(milliseconds: 150),
+                                    width: 76,
+                                    height: 76,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: _isScanning
+                                          ? Colors.white.withValues(alpha: 0.5)
+                                          : Colors.white,
+                                      border: Border.all(
+                                        color: Colors.white.withValues(alpha: 0.5),
+                                        width: 4,
+                                      ),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.black.withValues(alpha: 0.2),
+                                          blurRadius: 10,
+                                          offset: const Offset(0, 4),
+                                        ),
+                                      ],
+                                    ),
+                                    child: _isScanning
+                                        ? const Padding(
+                                            padding: EdgeInsets.all(20),
+                                            child: CircularProgressIndicator(
+                                              strokeWidth: 3,
+                                              color: AppColors.primary,
+                                            ),
+                                          )
+                                        : null,
+                                  ),
+                                ),
+
+                                // Flash button
+                                _CircleButton(
+                                  icon: _flashOn
+                                      ? Icons.flash_on_rounded
+                                      : Icons.flash_off_rounded,
+                                  onTap: _toggleFlash,
+                                  active: _flashOn,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-
-                    // Flash button
-                    _CircleButton(
-                      icon: _flashOn
-                          ? Icons.flash_on_rounded
-                          : Icons.flash_off_rounded,
-                      onTap: _toggleFlash,
-                      active: _flashOn,
-                    ),
-                  ],
+                  ),
                 ),
               ),
-
-              const SizedBox(height: 12),
             ],
           ),
         ],
@@ -383,6 +403,7 @@ class _CaptureScreenState extends State<CaptureScreen>
       ),
     );
   }
+
 
   Widget _buildCameraPreview() {
     if (_controller != null && _controller!.value.isInitialized) {
@@ -422,19 +443,21 @@ class _CircleButton extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: 46,
-        height: 46,
+        width: 48,
+        height: 48,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
           color: active
-              ? AppColors.primary.withValues(alpha: 0.15)
-              : AppColors.cardBg,
-          border: Border.all(color: const Color(0xFFDDD9D3)),
+              ? AppColors.primary
+              : Colors.white.withValues(alpha: 0.15),
+          border: Border.all(
+            color: active ? AppColors.primary : Colors.white.withValues(alpha: 0.3),
+          ),
         ),
         child: Icon(
           icon,
           size: 20,
-          color: active ? AppColors.primary : AppColors.textDark,
+          color: Colors.white,
         ),
       ),
     );
@@ -452,6 +475,7 @@ class _CornerPainter extends CustomPainter {
 
     const len = 28.0;
     const pad = 24.0;
+    const bottomPad = 260.0;
 
     // Top-left
     canvas.drawLine(Offset(pad, pad + len), Offset(pad, pad), paint);
@@ -469,24 +493,24 @@ class _CornerPainter extends CustomPainter {
     );
     // Bottom-left
     canvas.drawLine(
-      Offset(pad, size.height - pad - len),
-      Offset(pad, size.height - pad),
+      Offset(pad, size.height - bottomPad - len),
+      Offset(pad, size.height - bottomPad),
       paint,
     );
     canvas.drawLine(
-      Offset(pad, size.height - pad),
-      Offset(pad + len, size.height - pad),
+      Offset(pad, size.height - bottomPad),
+      Offset(pad + len, size.height - bottomPad),
       paint,
     );
     // Bottom-right
     canvas.drawLine(
-      Offset(size.width - pad - len, size.height - pad),
-      Offset(size.width - pad, size.height - pad),
+      Offset(size.width - pad - len, size.height - bottomPad),
+      Offset(size.width - pad, size.height - bottomPad),
       paint,
     );
     canvas.drawLine(
-      Offset(size.width - pad, size.height - pad - len),
-      Offset(size.width - pad, size.height - pad),
+      Offset(size.width - pad, size.height - bottomPad - len),
+      Offset(size.width - pad, size.height - bottomPad),
       paint,
     );
   }

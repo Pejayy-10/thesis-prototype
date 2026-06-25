@@ -11,7 +11,7 @@ android {
     ndkVersion = flutter.ndkVersion
     
     defaultConfig {
-        minSdkVersion 21   // camera package requires at least 21
+        minSdk = flutter.minSdkVersion   // camera package requires at least 21
     }
 
     compileOptions {

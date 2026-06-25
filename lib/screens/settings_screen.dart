@@ -26,165 +26,239 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    Widget _buildAnimatedItem(Widget child, int index) {
+      return TweenAnimationBuilder<double>(
+        key: ValueKey('settings_item_$index'),
+        tween: Tween(begin: 0.0, end: 1.0),
+        duration: Duration(milliseconds: 400 + (index * 100)),
+        curve: Curves.easeOutCubic,
+        builder: (context, value, child) {
+          return Transform.translate(
+            offset: Offset(0, 30 * (1 - value)),
+            child: Opacity(opacity: value, child: child),
+          );
+        },
+        child: child,
+      );
+    }
+
     return Scaffold(
+      extendBody: true,
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: const Text('Settings'),
-        automaticallyImplyLeading: false,
-      ),
       body: ListView(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        padding: const EdgeInsets.only(left: 24, right: 24, top: 8, bottom: 120),
         children: [
+          // ── Large Header ─────────────────────────────────
+          SafeArea(
+            bottom: false,
+            child: Padding(
+              padding: const EdgeInsets.only(top: 16, bottom: 20),
+              child: const Text(
+                'Settings',
+                style: TextStyle(
+                  fontFamily: 'Georgia',
+                  fontWeight: FontWeight.bold,
+                  fontSize: 32,
+                  color: AppColors.textDark,
+                ),
+              ),
+            ),
+          ),
           // ── App Info Card ──────────────────────────────────
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: AppColors.primary,
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Row(
-              children: [
-                Container(
-                  width: 52,
-                  height: 52,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(14),
+          _buildAnimatedItem(
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: AppColors.primary,
+                borderRadius: BorderRadius.circular(24),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.primary.withValues(alpha: 0.3),
+                    blurRadius: 16,
+                    offset: const Offset(0, 8),
                   ),
-                  child: const Icon(Icons.forest_rounded,
-                      color: Colors.white, size: 28),
-                ),
-                const SizedBox(width: 14),
-                const Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'WoodConNet',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        fontFamily: 'Georgia',
-                        color: Colors.white,
-                      ),
+                ],
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 52,
+                    height: 52,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(14),
                     ),
-                    SizedBox(height: 2),
-                    Text(
-                      'Version 1.0.0  •  Thesis Prototype',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.white70,
+                    child: const Icon(Icons.forest_rounded,
+                        color: Colors.white, size: 28),
+                  ),
+                  const SizedBox(width: 14),
+                  const Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'WoodConNet',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          fontFamily: 'Georgia',
+                          color: Colors.white,
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-              ],
+                      SizedBox(height: 2),
+                      Text(
+                        'Version 1.0.0  •  Thesis Prototype',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.white70,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
+            0,
           ),
 
           const SizedBox(height: 20),
 
           // ── Scan Preferences ──────────────────────────────
-          _SectionLabel(label: 'SCAN PREFERENCES'),
-          _SettingsCard(
-            children: [
-              _DropdownTile(
-                icon: Icons.eco_rounded,
-                label: 'Default Sample Type',
-                value: _defaultSample,
-                options: _sampleOptions,
-                onChanged: (v) => setState(() => _defaultSample = v!),
-              ),
-              const _Divider(),
-              _ToggleTile(
-                icon: Icons.percent_rounded,
-                label: 'Show Confidence Score',
-                value: _showConfidence,
-                onChanged: (v) => setState(() => _showConfidence = v),
-              ),
-              const _Divider(),
-              _ToggleTile(
-                icon: Icons.compare_arrows_rounded,
-                label: 'Show Alternative Matches',
-                value: _showAlternatives,
-                onChanged: (v) => setState(() => _showAlternatives = v),
-              ),
-            ],
+          _buildAnimatedItem(
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const _SectionLabel(label: 'SCAN PREFERENCES'),
+                _SettingsCard(
+                  children: [
+                    _DropdownTile(
+                      icon: Icons.eco_rounded,
+                      label: 'Default Sample Type',
+                      value: _defaultSample,
+                      options: _sampleOptions,
+                      onChanged: (v) => setState(() => _defaultSample = v!),
+                    ),
+                    const _Divider(),
+                    _ToggleTile(
+                      icon: Icons.percent_rounded,
+                      label: 'Show Confidence Score',
+                      value: _showConfidence,
+                      onChanged: (v) => setState(() => _showConfidence = v),
+                    ),
+                    const _Divider(),
+                    _ToggleTile(
+                      icon: Icons.compare_arrows_rounded,
+                      label: 'Show Alternative Matches',
+                      value: _showAlternatives,
+                      onChanged: (v) => setState(() => _showAlternatives = v),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            1,
           ),
 
           const SizedBox(height: 16),
 
           // ── Data & Privacy ─────────────────────────────────
-          _SectionLabel(label: 'DATA & PRIVACY'),
-          _SettingsCard(
-            children: [
-              _ToggleTile(
-                icon: Icons.history_rounded,
-                label: 'Save Scan History',
-                value: _saveHistory,
-                onChanged: (v) => setState(() => _saveHistory = v),
-              ),
-              const _Divider(),
-              _TapTile(
-                icon: Icons.delete_outline_rounded,
-                label: 'Clear Scan History',
-                labelColor: AppColors.danger,
-                iconColor: AppColors.danger,
-                onTap: () => _showClearDialog(context),
-              ),
-            ],
+          _buildAnimatedItem(
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const _SectionLabel(label: 'DATA & PRIVACY'),
+                _SettingsCard(
+                  children: [
+                    _ToggleTile(
+                      icon: Icons.history_rounded,
+                      label: 'Save Scan History',
+                      value: _saveHistory,
+                      onChanged: (v) => setState(() => _saveHistory = v),
+                    ),
+                    const _Divider(),
+                    _TapTile(
+                      icon: Icons.delete_outline_rounded,
+                      label: 'Clear Scan History',
+                      labelColor: AppColors.danger,
+                      iconColor: AppColors.danger,
+                      onTap: () => _showClearDialog(context),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            2,
           ),
 
           const SizedBox(height: 16),
 
           // ── Display ────────────────────────────────────────
-          _SectionLabel(label: 'DISPLAY'),
-          _SettingsCard(
-            children: [
-              _ToggleTile(
-                icon: Icons.dark_mode_outlined,
-                label: 'Dark Mode',
-                sub: 'Coming soon',
-                value: _darkMode,
-                onChanged: null,
-              ),
-            ],
+          _buildAnimatedItem(
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const _SectionLabel(label: 'DISPLAY'),
+                _SettingsCard(
+                  children: [
+                    _ToggleTile(
+                      icon: Icons.dark_mode_outlined,
+                      label: 'Dark Mode',
+                      sub: 'Coming soon',
+                      value: _darkMode,
+                      onChanged: null,
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            3,
           ),
 
           const SizedBox(height: 16),
 
           // ── About ──────────────────────────────────────────
-          _SectionLabel(label: 'ABOUT'),
-          _SettingsCard(
-            children: [
-              _TapTile(
-                icon: Icons.school_outlined,
-                label: 'Thesis Information',
-                onTap: () => _showThesisInfo(context),
-              ),
-              const _Divider(),
-              _TapTile(
-                icon: Icons.account_balance_outlined,
-                label: 'WMSU College of Computing Studies',
-                onTap: () {},
-              ),
-              const _Divider(),
-              _TapTile(
-                icon: Icons.article_outlined,
-                label: 'Data Sources',
-                sub: 'iNaturalist, GBIF, FPRDI, DENR RO IX',
-                onTap: () {},
-              ),
-            ],
+          _buildAnimatedItem(
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const _SectionLabel(label: 'ABOUT'),
+                _SettingsCard(
+                  children: [
+                    _TapTile(
+                      icon: Icons.school_outlined,
+                      label: 'Thesis Information',
+                      onTap: () => _showThesisInfo(context),
+                    ),
+                    const _Divider(),
+                    _TapTile(
+                      icon: Icons.account_balance_outlined,
+                      label: 'WMSU College of Computing Studies',
+                      onTap: () {},
+                    ),
+                    const _Divider(),
+                    _TapTile(
+                      icon: Icons.article_outlined,
+                      label: 'Data Sources',
+                      sub: 'iNaturalist, GBIF, FPRDI, DENR RO IX',
+                      onTap: () {},
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            4,
           ),
 
           const SizedBox(height: 20),
 
           // ── Version Footer ────────────────────────────────
-          const Center(
-            child: Text(
-              'WoodConNet  •  WMSU CCS  •  2026',
-              style: TextStyle(fontSize: 11, color: AppColors.textLight),
+          _buildAnimatedItem(
+            const Center(
+              child: Text(
+                'WoodConNet  •  WMSU CCS  •  2026',
+                style: TextStyle(fontSize: 11, color: AppColors.textLight),
+              ),
             ),
+            5,
           ),
 
           const SizedBox(height: 16),
@@ -304,11 +378,11 @@ class _SectionLabel extends StatelessWidget {
       child: Text(
         label,
         style: const TextStyle(
-          fontSize: 11,
-          letterSpacing: 1.2,
-          color: AppColors.textMuted,
+          fontSize: 12,
+          letterSpacing: 1.5,
+          color: AppColors.textDark,
           fontFamily: 'sans-serif',
-          fontWeight: FontWeight.w600,
+          fontWeight: FontWeight.w800,
         ),
       ),
     );
@@ -324,7 +398,8 @@ class _SettingsCard extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: AppColors.cardBg,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: AppTheme.premiumShadow,
       ),
       child: Column(children: children),
     );

@@ -135,13 +135,27 @@ class _GuideScreenState extends State<GuideScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBody: true,
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: const Text('Guide'),
-        automaticallyImplyLeading: false,
-      ),
       body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // ── Large Header ─────────────────────────────────
+          SafeArea(
+            bottom: false,
+            child: Padding(
+              padding: const EdgeInsets.only(top: 24, left: 24, right: 24, bottom: 12),
+              child: const Text(
+                'Guide',
+                style: TextStyle(
+                  fontFamily: 'Georgia',
+                  fontWeight: FontWeight.bold,
+                  fontSize: 32,
+                  color: AppColors.textDark,
+                ),
+              ),
+            ),
+          ),
           // ── Category Tabs ─────────────────────────────────
           SizedBox(
             height: 44,
@@ -162,20 +176,23 @@ class _GuideScreenState extends State<GuideScreen> {
                     decoration: BoxDecoration(
                       color:
                           active ? AppColors.primary : AppColors.cardBg,
-                      borderRadius: BorderRadius.circular(24),
+                      borderRadius: BorderRadius.circular(30),
+                      boxShadow: active ? [] : AppTheme.premiumShadow,
                       border: Border.all(
                         color: active
                             ? AppColors.primary
-                            : const Color(0xFFDDD9D3),
+                            : Colors.transparent,
                       ),
                     ),
-                    child: Text(
-                      _categories[i],
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w500,
-                        color:
-                            active ? Colors.white : AppColors.textDark,
+                    child: Center(
+                      child: Text(
+                        _categories[i],
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color:
+                              active ? Colors.white : AppColors.textMuted,
+                        ),
                       ),
                     ),
                   ),
@@ -189,26 +206,74 @@ class _GuideScreenState extends State<GuideScreen> {
           // ── Content ───────────────────────────────────────
           Expanded(
             child: ListView(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              padding: const EdgeInsets.only(left: 16, right: 16, bottom: 120),
               children: [
                 if (_activeCategory == 'Species') ...[
                   const _SectionHeader(
                     title: '5 Classified Species',
                     sub: 'Based on FPRDI strength groupings and DENR standards',
                   ),
-                  ..._species.map((s) => _SpeciesCard(species: s)),
+                  ..._species.asMap().entries.map((entry) {
+                    final int i = entry.key;
+                    final s = entry.value;
+                    return TweenAnimationBuilder<double>(
+                      key: ValueKey('${s['name']}_$_activeCategory'),
+                      tween: Tween(begin: 0.0, end: 1.0),
+                      duration: Duration(milliseconds: 400 + (i * 100)),
+                      curve: Curves.easeOutCubic,
+                      builder: (context, value, child) {
+                        return Transform.translate(
+                          offset: Offset(0, 30 * (1 - value)),
+                          child: Opacity(opacity: value, child: child),
+                        );
+                      },
+                      child: _SpeciesCard(species: s),
+                    );
+                  }),
                 ] else if (_activeCategory == 'How to Scan') ...[
                   const _SectionHeader(
                     title: 'Scanning Guide',
                     sub: 'Follow these steps for accurate classification',
                   ),
-                  ..._scanSteps.map((s) => _StepCard(step: s)),
+                  ..._scanSteps.asMap().entries.map((entry) {
+                    final int i = entry.key;
+                    final s = entry.value;
+                    return TweenAnimationBuilder<double>(
+                      key: ValueKey('${s['step']}_$_activeCategory'),
+                      tween: Tween(begin: 0.0, end: 1.0),
+                      duration: Duration(milliseconds: 400 + (i * 100)),
+                      curve: Curves.easeOutCubic,
+                      builder: (context, value, child) {
+                        return Transform.translate(
+                          offset: Offset(0, 30 * (1 - value)),
+                          child: Opacity(opacity: value, child: child),
+                        );
+                      },
+                      child: _StepCard(step: s),
+                    );
+                  }),
                 ] else ...[
                   const _SectionHeader(
                     title: 'Legal References',
                     sub: 'Philippine laws governing timber use and protection',
                   ),
-                  ..._regulations.map((r) => _RegCard(reg: r)),
+                  ..._regulations.asMap().entries.map((entry) {
+                    final int i = entry.key;
+                    final r = entry.value;
+                    return TweenAnimationBuilder<double>(
+                      key: ValueKey('${r['law']}_$_activeCategory'),
+                      tween: Tween(begin: 0.0, end: 1.0),
+                      duration: Duration(milliseconds: 400 + (i * 100)),
+                      curve: Curves.easeOutCubic,
+                      builder: (context, value, child) {
+                        return Transform.translate(
+                          offset: Offset(0, 30 * (1 - value)),
+                          child: Opacity(opacity: value, child: child),
+                        );
+                      },
+                      child: _RegCard(reg: r),
+                    );
+                  }),
                 ],
                 const SizedBox(height: 16),
               ],
@@ -278,12 +343,27 @@ class _SpeciesCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    Color badgeColor;
+    IconData badgeIcon;
+    final status = species['status'] as String;
+    if (status == 'Critically Endangered') {
+      badgeColor = const Color(0xFFD32F2F); // Vibrant Red
+      badgeIcon = Icons.warning_rounded;
+    } else if (status == 'Vulnerable') {
+      badgeColor = const Color(0xFFF57F17); // Vibrant Orange
+      badgeIcon = Icons.info_outline_rounded;
+    } else {
+      badgeColor = const Color(0xFF2E7D32); // Vibrant Green
+      badgeIcon = Icons.verified_user_rounded;
+    }
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: AppColors.cardBg,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: AppTheme.premiumShadow,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -291,16 +371,16 @@ class _SpeciesCard extends StatelessWidget {
           Row(
             children: [
               Container(
-                width: 40,
-                height: 40,
+                width: 44,
+                height: 44,
                 decoration: BoxDecoration(
-                  color: AppColors.primaryLight,
-                  borderRadius: BorderRadius.circular(10),
+                  color: AppColors.primaryLight.withValues(alpha: 0.5),
+                  borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(species['icon'] as IconData,
-                    color: AppColors.primary, size: 20),
+                    color: AppColors.primary, size: 22),
               ),
-              const SizedBox(width: 10),
+              const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -308,18 +388,19 @@ class _SpeciesCard extends StatelessWidget {
                     Text(
                       species['name'] as String,
                       style: const TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w900,
                         fontFamily: 'Georgia',
                         color: AppColors.textDark,
+                        letterSpacing: 0.2,
                       ),
                     ),
                     Text(
                       species['scientific'] as String,
-                      style: const TextStyle(
-                        fontSize: 11,
+                      style: TextStyle(
+                        fontSize: 12,
                         fontStyle: FontStyle.italic,
-                        color: AppColors.textMuted,
+                        color: AppColors.textMuted.withValues(alpha: 0.8),
                       ),
                     ),
                   ],
@@ -327,25 +408,33 @@ class _SpeciesCard extends StatelessWidget {
               ),
               Container(
                 padding:
-                    const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: Color(species['statusColor'] as int).withValues(alpha: 0.12),
+                  color: badgeColor.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: badgeColor.withValues(alpha: 0.2)),
                 ),
-                child: Text(
-                  species['status'] as String,
-                  style: TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w600,
-                    color: Color(species['statusColor'] as int),
-                  ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(badgeIcon, size: 12, color: badgeColor),
+                    const SizedBox(width: 4),
+                    Text(
+                      status,
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w800,
+                        color: badgeColor,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 12),
           const Divider(height: 1, color: Color(0xFFF0EDE8)),
-          const SizedBox(height: 10),
+          const SizedBox(height: 12),
           Row(
             children: [
               _PropChip(label: 'Strength', value: species['strength'] as String),
@@ -353,12 +442,12 @@ class _SpeciesCard extends StatelessWidget {
               _PropChip(label: 'Durability', value: species['durability'] as String),
             ],
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 10),
           Row(
             children: [
               const Icon(Icons.construction_rounded,
-                  size: 13, color: AppColors.textMuted),
-              const SizedBox(width: 5),
+                  size: 14, color: AppColors.textMuted),
+              const SizedBox(width: 6),
               Text(
                 species['suitability'] as String,
                 style: const TextStyle(
@@ -422,33 +511,41 @@ class _StepCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppColors.cardBg,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: AppTheme.premiumShadow,
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            width: 36,
-            height: 36,
-            decoration: const BoxDecoration(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
               color: AppColors.primary,
               shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.primary.withValues(alpha: 0.3),
+                  blurRadius: 8,
+                  offset: const Offset(0, 3),
+                ),
+              ],
             ),
             child: Center(
               child: Text(
                 step['step'] as String,
                 style: const TextStyle(
                   color: Colors.white,
-                  fontSize: 11,
+                  fontSize: 13,
                   fontWeight: FontWeight.bold,
                 ),
               ),
             ),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 14),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -456,16 +553,16 @@ class _StepCard extends StatelessWidget {
                 Text(
                   step['title'] as String,
                   style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w800,
                     color: AppColors.textDark,
                   ),
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 6),
                 Text(
                   step['desc'] as String,
                   style: const TextStyle(
-                    fontSize: 12,
+                    fontSize: 13,
                     color: AppColors.textMuted,
                     height: 1.5,
                   ),
@@ -489,25 +586,26 @@ class _RegCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppColors.cardBg,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: AppTheme.premiumShadow,
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            width: 42,
-            height: 42,
+            width: 44,
+            height: 44,
             decoration: BoxDecoration(
-              color: AppColors.primaryLight,
-              borderRadius: BorderRadius.circular(10),
+              color: AppColors.primaryLight.withValues(alpha: 0.5),
+              borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(reg['icon'] as IconData,
-                color: AppColors.primary, size: 20),
+                color: AppColors.primary, size: 22),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 14),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -516,7 +614,7 @@ class _RegCard extends StatelessWidget {
                   children: [
                     Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 2),
+                          horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
                         color: AppColors.primary,
                         borderRadius: BorderRadius.circular(6),
@@ -531,24 +629,24 @@ class _RegCard extends StatelessWidget {
                         ),
                       ),
                     ),
-                    const SizedBox(width: 8),
+                    const SizedBox(width: 10),
                     Expanded(
                       child: Text(
                         reg['title'] as String,
                         style: const TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w800,
                           color: AppColors.textDark,
                         ),
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 6),
+                const SizedBox(height: 8),
                 Text(
                   reg['desc'] as String,
                   style: const TextStyle(
-                    fontSize: 12,
+                    fontSize: 13,
                     color: AppColors.textMuted,
                     height: 1.5,
                   ),

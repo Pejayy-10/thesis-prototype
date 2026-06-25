@@ -40,16 +40,49 @@ class _ClassificationScreenState extends State<ClassificationScreen>
   Widget build(BuildContext context) {
     final r = widget.result;
     return Scaffold(
+      extendBody: true,
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: const Text('Classification'),
-        leading: const BackButton(color: AppColors.primary),
-      ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+        padding: const EdgeInsets.only(left: 20, right: 20, top: 8, bottom: 40),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // ── Top Bar ──────────────────────────────────────
+            SafeArea(
+              bottom: false,
+              child: Padding(
+                padding: const EdgeInsets.only(top: 8, bottom: 16),
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: GestureDetector(
+                        onTap: () => Navigator.pop(context),
+                        child: Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: AppColors.cardBg,
+                            shape: BoxShape.circle,
+                            boxShadow: AppTheme.premiumShadow,
+                          ),
+                          child: const Icon(Icons.arrow_back_rounded, color: AppColors.primary, size: 22),
+                        ),
+                      ),
+                    ),
+                    const Text(
+                      'Classification',
+                      style: TextStyle(
+                        fontFamily: 'Georgia',
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.primary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
             // ── Sample Image ───────────────────────────────
             ClipRRect(
               borderRadius: BorderRadius.circular(16),
@@ -170,7 +203,8 @@ class _ClassificationScreenState extends State<ClassificationScreen>
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: AppColors.cardBg,
-                borderRadius: BorderRadius.circular(14),
+                borderRadius: BorderRadius.circular(24),
+                boxShadow: AppTheme.premiumShadow,
               ),
               child: Column(
                 children: [
@@ -221,7 +255,8 @@ class _ClassificationScreenState extends State<ClassificationScreen>
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: AppColors.cardBg,
-                borderRadius: BorderRadius.circular(14),
+                borderRadius: BorderRadius.circular(24),
+                boxShadow: AppTheme.premiumShadow,
               ),
               child: Row(
                 children: [
@@ -268,7 +303,7 @@ class _ClassificationScreenState extends State<ClassificationScreen>
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: () {
-                  Navigator.push(
+                  Navigator.pushReplacement(
                     context,
                     MaterialPageRoute(
                       builder: (_) =>
@@ -281,7 +316,7 @@ class _ClassificationScreenState extends State<ClassificationScreen>
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
+                    borderRadius: BorderRadius.circular(30),
                   ),
                   elevation: 0,
                 ),
@@ -304,30 +339,6 @@ class _ClassificationScreenState extends State<ClassificationScreen>
             const SizedBox(height: 20),
           ],
         ),
-      ),
-      bottomNavigationBar: ValueListenableBuilder<int>(
-        valueListenable: globalNavIndex,
-        builder: (context, navIndex, _) {
-          return WoodConNetBottomNav(
-            currentIndex: navIndex,
-            onTap: (i) {
-              if (i == navIndex) return;
-              switch (i) {
-                case 1:
-                  Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (_) => const HistoryScreen()), (route) => false);
-                  break;
-                case 2:
-                  Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (_) => const GuideScreen()), (route) => false);
-                  break;
-                case 3:
-                  Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (_) => const SettingsScreen()), (route) => false);
-                  break;
-                default:
-                  break;
-              }
-            },
-          );
-        },
       ),
     );
   }
@@ -391,14 +402,15 @@ class _AltCard extends StatelessWidget {
       margin: const EdgeInsets.only(right: 12),
       decoration: BoxDecoration(
         color: AppColors.cardBg,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: AppTheme.premiumShadow,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           ClipRRect(
             borderRadius:
-                const BorderRadius.vertical(top: Radius.circular(14)),
+                const BorderRadius.vertical(top: Radius.circular(20)),
             child: Container(
               height: 70,
               color: const Color(0xFF3A5C42),
